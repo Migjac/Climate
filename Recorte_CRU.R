@@ -41,22 +41,26 @@ library(raster)
 library(rasterVis)
 library(rgdal)
 library(sp)
+library(tabularaster)
+library(tidyverse)
+library(terra)
 
-# Llamar a las capas raster de chelsa por variable y crear una lista: Temperatura Media Anual (TAS)
+# Llamar a las capas raster de Chelsa por variable y crear una lista: Temperatura Media Anual (TAS)
 path_TAS <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/tas",
                           pattern = "*.tif",full.names = TRUE)
 
 TAS_stk <- raster::stack(path_TAS) # Crear un stack de las capas
 
-# Crea el mapa de la CRU a partir del shp
+# Crear el mapa de la CRU a partir del shp
 CRU_LL <- rgdal::readOGR("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Climate/Lim_CRU", "CRU_LL")
 
-# Recorta el stack de capas TAS a la CRU
+# Recortar el stack de capas TAS a la CRU y guardarlo
 CRU_TAS <- raster::mask(crop(TAS_stk, CRU_LL), CRU_LL)
 plot(CRU_TAS[[1]])
 CRU_TAS_stk <- stack(CRU_TAS)
 stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
+<<<<<<< HEAD
 
 ####Create a rute to ggdrive EXAMPLE
 
@@ -72,3 +76,14 @@ hatched<-read.csv(paste0("https://docs.google.com/uc?id=", id, "&export=download
 
 
 
+=======
+# Convertir el stack en un tibble y exportarlo como csv
+CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE, cell=TRUE, value=TRUE))
+CRU_TAS_tbbl %>% 
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) 
+  # %>% write.csv("CRU_TMd.csv") # Desactive esta función porque crea un archivo de >2 Gb que no aguanta GitHub
+  
+  
+
+    
+>>>>>>> c56c1a381eccc933e3b41e57947c307f53b4c60f
