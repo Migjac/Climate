@@ -74,13 +74,15 @@ CRU_TAS_tbbl %>%
 install.packages("googledrive") ##Install package to connect drive and rstudio
 library(googledrive)
 
-####Getting permision to access mydrive 
+#Accessing to CRU_TMd.csv file in shared folder in EMM drive 
+drive_ls("Analisis/Clima/Archivos_grandes") #giving permission to the folder "Archivos_grandes"
+id_tmd<-"1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA" #using the "<drv_id>" of CRU_TMd.csv
+tas_tmd<-read.csv(paste0("https://docs.google.com/uc?id=", id_tmd, "&export=download"), header = FALSE, quote = "", sep = '\t') #reading the file in my computer
 
-mydrive<-drive_find(n_max=10) ##Create an access to my ten more recent files
-mydrive #showing my recen files informatio and getting the id of my "data.frame"
-id<-"1QZ0yq-KTIVvJz1gkAYF4_y2lEK7zy_-U"  #using the ID of DF
-hatched<-read.csv(paste0("https://docs.google.com/uc?id=", id, "&export=download")) #reading my DF in R (depending on the size-the time) 
+x<-as_id("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?usp=share_link")
+tas_tmd<-drive_read_raw(x)
+str(tas_tmd)
 
-sd <- shared_drive_get("My drive/PAPIIT_2022/")
-drive_upload("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
+#For upload heavy databases
+##drive_upload("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
 
