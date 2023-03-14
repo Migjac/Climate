@@ -64,8 +64,8 @@ stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 # Convertir el stack en un tibble y exportarlo como csv
 CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE, cell=TRUE, value=TRUE))
 CRU_TAS_tbbl %>% 
-  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) 
-  # %>% write.csv("CRU_TMd.csv") # Desactive esta función porque crea un archivo de >2 Gb que no aguanta GitHub
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) %>% 
+  write.csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_TMd.csv")
   
 
 
