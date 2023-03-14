@@ -60,7 +60,14 @@ plot(CRU_TAS[[1]])
 CRU_TAS_stk <- stack(CRU_TAS)
 stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
-<<<<<<< HEAD
+
+# Convertir el stack en un tibble y exportarlo como csv
+CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE, cell=TRUE, value=TRUE))
+CRU_TAS_tbbl %>% 
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) 
+  # %>% write.csv("CRU_TMd.csv") # Desactive esta función porque crea un archivo de >2 Gb que no aguanta GitHub
+  
+
 
 ####Create a rute to ggdrive EXAMPLE
 
@@ -73,17 +80,3 @@ mydrive<-drive_find(n_max=10) ##Create an access to my ten more recent files
 mydrive #showing my recen files informatio and getting the id of my "data.frame"
 id<-"1QZ0yq-KTIVvJz1gkAYF4_y2lEK7zy_-U"  #using the ID of DF
 hatched<-read.csv(paste0("https://docs.google.com/uc?id=", id, "&export=download")) #reading my DF in R (depending on the size-the time) 
-
-
-
-=======
-# Convertir el stack en un tibble y exportarlo como csv
-CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE, cell=TRUE, value=TRUE))
-CRU_TAS_tbbl %>% 
-  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) 
-  # %>% write.csv("CRU_TMd.csv") # Desactive esta función porque crea un archivo de >2 Gb que no aguanta GitHub
-  
-  
-
-    
->>>>>>> c56c1a381eccc933e3b41e57947c307f53b4c60f
