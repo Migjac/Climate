@@ -80,3 +80,7 @@ mydrive<-drive_find(n_max=10) ##Create an access to my ten more recent files
 mydrive #showing my recen files informatio and getting the id of my "data.frame"
 id<-"1QZ0yq-KTIVvJz1gkAYF4_y2lEK7zy_-U"  #using the ID of DF
 hatched<-read.csv(paste0("https://docs.google.com/uc?id=", id, "&export=download")) #reading my DF in R (depending on the size-the time) 
+
+sd <- shared_drive_get("My drive/PAPIIT_2022/")
+drive_upload("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
+
