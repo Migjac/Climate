@@ -57,3 +57,18 @@ plot(CRU_TAS[[1]])
 CRU_TAS_stk <- stack(CRU_TAS)
 stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
+
+####Create a rute to ggdrive EXAMPLE
+
+install.packages("googledrive") ##Install package to connect drive and rstudio
+library(googledrive)
+
+####Getting permision to access mydrive 
+
+mydrive<-drive_find(n_max=10) ##Create an access to my ten more recent files
+mydrive #showing my recen files informatio and getting the id of my "data.frame"
+id<-"1QZ0yq-KTIVvJz1gkAYF4_y2lEK7zy_-U"  #using the ID of DF
+hatched<-read.csv(paste0("https://docs.google.com/uc?id=", id, "&export=download")) #reading my DF in R (depending on the size-the time) 
+
+
+
