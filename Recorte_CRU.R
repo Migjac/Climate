@@ -80,8 +80,25 @@ id_tmd<-"1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA" #using the "<drv_id>" of CRU_TMd.csv
 tas_tmd<-read.csv(paste0("https://docs.google.com/uc?id=", id_tmd, "&export=download"), header = FALSE, quote = "", sep = '\t') #reading the file in my computer
 
 x<-as_id("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?usp=share_link")
-tas_tmd<-drive_read_raw(x)
-str(tas_tmd)
+tas_tmd<-drive_read_string(x, type="csv")
+tas_tmd %>%
+  drive_read_string() %>%
+  read.csv(text = .)
+
+
+temp <- tempfile(fileext = ".zip")
+download.file("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?usp=share_link",
+              temp)
+out <- unzip(temp, exdir = tempdir())
+tas <- read.csv(out[14], sep = ";")
+str(tas)
+
+temp <- tempfile(fileext = ".zip")
+dl <- drive_download(
+  as_id("1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA"), path = temp, overwrite = TRUE)
+out <- unzip(temp, exdir = tempdir())
+bank <- read.csv(out[14], sep = ";")
+str(bank)
 
 #For upload heavy databases
 ##drive_upload("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
