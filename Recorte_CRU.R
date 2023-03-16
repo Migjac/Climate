@@ -60,7 +60,9 @@ plot(CRU_TAS[[1]])
 CRU_TAS_stk <- stack(CRU_TAS)
 capas_CRU_stk <- as_tibble(names(CRU_TAS_stk)) %>%
   mutate(dimindex = row_number()) %>%
-  relocate(dimindex, Capa = value)
+  relocate(dimindex, Capa = value) %>%
+  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
+
 
 # stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
@@ -69,9 +71,8 @@ CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE,
                                                 cell=TRUE, value=TRUE))
 CRU_TAS_tbbl %>%
   left_join(capas_CRU_stk, by = "dimindex") %>%
-  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T) %>%
   mutate((TMd = cellvalue/10)-273.15) %>%
-  relocate(CellID = cellindex, CapaID = dimindex, Capa, Long = x, Lat = y, Anho, Mes, TMd_K =
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, TMd_K =
              cellvalue, TMd) %>%
   write_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Tmd_toda.csv")
 
