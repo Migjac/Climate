@@ -72,9 +72,9 @@ CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE,
                                                 cell=TRUE, value=TRUE))
 CRU_TAS_tbbl %>%
   left_join(capas_CRU_stk, by = "dimindex") %>%
-  mutate((TMd = cellvalue/10)-273.15) %>%
   relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, TMd_K =
-             cellvalue, TMd) %>%
+             cellvalue) %>%
+  mutate((TMd = TMd_K/10)-273.15) %>%
   write_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Tmd_toda.csv")
 
 
