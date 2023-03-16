@@ -74,7 +74,7 @@ CRU_TAS_tbbl %>%
   left_join(capas_CRU_stk, by = "dimindex") %>%
   relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, TMd_K =
              cellvalue) %>%
-  mutate((TMd = TMd_K/10)-273.15) %>%
+  mutate(TMd = (TMd_K/10)-273.15) %>%
   write_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Tmd_toda.csv")
 
 
