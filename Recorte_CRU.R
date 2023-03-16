@@ -11,19 +11,19 @@ paquetes <- c("devtools", # herramientas para desarrolladores
                 "spocc","dismo","ENMeval","biomod2", # Distribucion de especies
                 "ggplot2","rgl","car","plotly", # Graficacion
                 "dplyr","stringr","zoo", # manejo de datos
-                "readxl","rio", # Lectura de datos 
+                "readxl","rio", # Lectura de datos
                 "popbio", # Demografia
                 "matrixStas","Matrix","RSpectra", # Operaciones con matrices
                 "animation", # Para hacer animaciones
                 "purrr", # Programacion funcional
                 "crosstalk", # comunicar mapas, tablas y graficos interactivos
-                "rvest", 
-                "tidyverse") # Paquetes para ciencia de datos 
+                "rvest",
+                "tidyverse") # Paquetes para ciencia de datos
 # (purrr,ggplot2, dplyr,readr...)
 
 
 
-install.packages(paquetes, 
+install.packages(paquetes,
                  repos = "https://cloud.r-project.org/")
 
 library(knitr)
@@ -31,7 +31,7 @@ library(rgl)
 library(leaflet)
 library(maptools)
 library(magrittr)
-library(plotly) 
+library(plotly)
 library(rgeos)
 library(sf)
 library(tmap)
@@ -66,6 +66,7 @@ capas_CRU_stk <- as_tibble(names(CRU_TAS_stk)) %>%
 
 # stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
+
 # Convertir el stack en un tibble y exportarlo como csv
 CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE,
                                                 cell=TRUE, value=TRUE))
@@ -91,7 +92,40 @@ tas_tmd<-drive_read_raw(x)
 str(tas_tmd)
 #For upload heavy databases
 ##drive_upload("~/Library/Mobile
-Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")  
-  
+Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
 
-    
+
+
+####Create a rute to ggdrive EXAMPLE
+
+install.packages("googledrive") ##Install package to connect drive and rstudio
+library(googledrive)
+
+#Accessing to CRU_TMd.csv file in shared folder in EMM drive
+drive_ls("Analisis/Clima/Archivos_grandes") #giving permission to the folder "Archivos_grandes"
+id_tmd<-"1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA" #using the "<drv_id>" of CRU_TMd.csv
+tas_tmd<-read.csv(paste0("https://docs.google.com/uc?id=", id_tmd, "&export=download"), header = FALSE, quote = "", sep = '\t') #reading the file in my computer
+
+x<-as_id("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?usp=share_link")
+tas_tmd<-drive_read_string(x, type="csv")
+tas_tmd %>%
+  drive_read_string() %>%
+  read.csv(text = .)
+
+
+temp <- tempfile(fileext = ".zip")
+download.file("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?usp=share_link",
+              temp)
+out <- unzip(temp, exdir = tempdir())
+tas <- read.csv(out[14], sep = ";")
+str(tas)
+
+temp <- tempfile(fileext = ".zip")
+dl <- drive_download(
+  as_id("1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA"), path = temp, overwrite = TRUE)
+out <- unzip(temp, exdir = tempdir())
+bank <- read.csv(out[14], sep = ";")
+str(bank)
+
+#For upload heavy databases
+##drive_upload("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
