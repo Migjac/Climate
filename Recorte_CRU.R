@@ -54,18 +54,43 @@ TAS_stk <- raster::stack(path_TAS) # Crear un stack de las capas
 # Crear el mapa de la CRU a partir del shp
 CRU_LL <- rgdal::readOGR("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Climate/Lim_CRU", "CRU_LL")
 
-# Recortar el stack de capas TAS a la CRU y guardarlo
+# Recortar el stack de capas TAS a la CRU
 CRU_TAS <- raster::mask(crop(TAS_stk, CRU_LL), CRU_LL)
 plot(CRU_TAS[[1]])
 CRU_TAS_stk <- stack(CRU_TAS)
-stackSave(CRU_TAS_stk, "CRU_TAS_stk")
+capas_CRU_stk <- as_tibble(names(CRU_TAS_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+
+# stackSave(CRU_TAS_stk, "CRU_TAS_stk")
 
 # Convertir el stack en un tibble y exportarlo como csv
-CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE, cell=TRUE, value=TRUE))
-CRU_TAS_tbbl %>% 
-  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, TMd = cellvalue) 
-  # %>% write.csv("CRU_TMd.csv") # Desactive esta función porque crea un archivo de >2 Gb que no aguanta GitHub
-  
+CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE,
+                                                cell=TRUE, value=TRUE))
+CRU_TAS_tbbl %>%
+  left_join(capas_CRU_stk, by = "dimindex") %>%
+  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T) %>%
+  mutate((TMd = cellvalue/10)-273.15) %>%
+  relocate(CellID = cellindex, CapaID = dimindex, Capa, Long = x, Lat = y, Anho, Mes, TMd_K =
+             cellvalue, TMd) %>%
+  write_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Tmd_toda.csv")
+
+
+####Create a rute to ggdrive EXAMPLE
+install.packages("googledrive") ##Install package to connect drive and rstudio
+library(googledrive)
+#Accessing to CRU_TMd.csv file in shared folder in EMM drive
+drive_ls("Analisis/Clima/Archivos_grandes") #giving permission to the folder "Archivos_grandes"
+id_tmd<-"1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA" #using the "<drv_id>" of CRU_TMd.csv
+tas_tmd<-read.csv(paste0("https://docs.google.com/uc?id=", id_tmd, "&export=download"), header =
+                    FALSE, quote = "", sep = '\t') #reading the file in my computer
+x<-as_id("https://drive.google.com/file/d/1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA/view?
+usp=share_link")
+tas_tmd<-drive_read_raw(x)
+str(tas_tmd)
+#For upload heavy databases
+##drive_upload("~/Library/Mobile
+Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")  
   
 
     
