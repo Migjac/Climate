@@ -46,36 +46,51 @@ library(tidyverse)
 library(terra)
 
 # Llamar a las capas raster de Chelsa por variable y crear una lista: Temperatura Media Anual (TAS)
-path_TAS <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/tas",
+path_TAS <- list.files("/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/tas",
                           pattern = "*.tif",full.names = TRUE)
 
 TAS_stk <- raster::stack(path_TAS) # Crear un stack de las capas
 
 # Crear el mapa de la CRU a partir del shp
-CRU_LL <- rgdal::readOGR("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Climate/Lim_CRU", "CRU_LL")
+CRU_LL <- rgdal::readOGR("/Users/enriquemm/Documents/GitHub/Climate/Lim_CRU")
 
 # Recortar el stack de capas TAS a la CRU
 CRU_TAS <- raster::mask(crop(TAS_stk, CRU_LL), CRU_LL)
 plot(CRU_TAS[[1]])
-CRU_TAS_stk <- stack(CRU_TAS)
+CRU_TAS_Cels <- round((CRU_TAS/10)-273.15, 2)
+plot(CRU_TAS_Cels[[1]])
+CRU_TAS_stk <- stack(CRU_TAS_Cels)
+
+# Generar el csv del índice de capas del stack
+CRU_capasID <- as_tibble(names(CRU_TAS_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+write_csv(CRU_capasID, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_capasID.csv")
+
+# Crear una tabla separando año y mes del nombre de las capas
 capas_CRU_stk <- as_tibble(names(CRU_TAS_stk)) %>%
   mutate(dimindex = row_number()) %>%
   relocate(dimindex, Capa = value) %>%
   separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
 
-
-# stackSave(CRU_TAS_stk, "CRU_TAS_stk")
-
-
-# Convertir el stack en un tibble y exportarlo como csv
+# Convertir el stack en un tibble y unir todos los campos
 CRU_TAS_tbbl <- na.omit(tabularaster::as_tibble(CRU_TAS_stk, xy=TRUE, dim=TRUE,
                                                 cell=TRUE, value=TRUE))
-CRU_TAS_tbbl %>%
+CRU_TMd_Completa <- CRU_TAS_tbbl %>%
   left_join(capas_CRU_stk, by = "dimindex") %>%
-  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, TMd_K =
-             cellvalue) %>%
-  mutate(TMd = (TMd_K/10)-273.15) %>%
-  write_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Tmd_toda.csv")
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, TMd =
+             cellvalue)
+
+# Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
+CRU_SerT_TMd <- dplyr::select(CRU_TMd_Completa, -CapaID, -Long, -Lat)
+write_csv(CRU_SerT_TMd, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Tmd.csv")
+
+# Generar el csv del índice de coordenadas
+CRU_Coordenadas <- CRU_TMd_Completa %>%
+  filter(Anho == 1980, Mes == 1) %>%
+  select(CellID, Long, Lat)
+write_csv(CRU_Coordenadas, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Coordenadas.csv")
+
 
 
 ####Create a rute to ggdrive EXAMPLE
