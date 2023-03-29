@@ -40,21 +40,23 @@ ggplot (TMd_mensual, aes(x = Anho, y = TMd_mensual)) +
   geom_boxplot(aes(group = Anho)) +
   labs(x = "Año", y = "Temperatura media")
 
-# Plot the mean temperature over time
-ggplot(TMd_mensual, aes(x = Anho, y = TMd_mensual)) +
+
+# Compute the 90th percentile of temperatures
+temp_90 <- quantile(temp_data$temperature, 0.9)
+
+# Compute the number of extreme days each year
+temp_extreme <- temp_data %>%
+  mutate(year = year(date),
+         is_extreme = ifelse(temperature >= temp_90, 1, 0)) %>%
+  group_by(year) %>%
+  summarize(num_extreme = sum(is_extreme))
+
+# Plot the number of extreme days by year
+ggplot(temp_extreme, aes(x = year, y = num_extreme)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Mean Temperature by Decade (1980-2018)",
-       x = "Año", y = "Mean Temperature (°C)")
-
-yr <- as.Date(as.character(CRU_Tmd$Anho), format = "%Y")
-y <- year(yr)
-CRU_Tmd["year"]<-y
-
-year <- CRU_Tmd %>%
-  mutate(year = as.Date(ISOdate(year, 1, 1)) , #first, convert the year into a date
-         year = format(year,'%Y'))    
-
+  labs(title = "Number of Extreme Temperature Days (1980-2018)",
+       x = "Year", y = "Number of Days")
 
 #Spatial analysis
 # Convert the data to a spatial object (assuming the data contains latitude and longitude columns)
@@ -66,7 +68,7 @@ tm_shape(CRU_Tmd_sf) +
           title = "Temperature (°C)", size = 0.1) +
   tm_scale_bar()
 
-ggplot(CRU_Tmd, aes(x = year, y = TMd)) +
+ggplot(CRU_Tmd, aes(x = y, y = TMd)) +
   geom_line(aes(group = 1, color = factor(TMd)))  +
   scale_x_date(date_breaks = "10 years", date_labels = "%Y")
 
