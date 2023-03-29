@@ -93,6 +93,10 @@ write_csv(CRU_Coordenadas, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-em
 
 
 
+
+
+
+
 ####Create a rute to ggdrive EXAMPLE
 install.packages("googledrive") ##Install package to connect drive and rstudio
 library(googledrive)
@@ -109,15 +113,13 @@ str(tas_tmd)
 ##drive_upload("~/Library/Mobile
 Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Climate_Analisis/Climate/proof_hatch.csv")
 
-
-
 ####Create a rute to ggdrive EXAMPLE
 
 install.packages("googledrive") ##Install package to connect drive and rstudio
 library(googledrive)
 
 #Accessing to CRU_TMd.csv file in shared folder in EMM drive
-drive_ls("Analisis/Clima/Archivos_grandes") #giving permission to the folder "Archivos_grandes"
+drive_ls("Analisis/Clima/Archivos_grandes") ##giving permission to the folder "Archivos_grandes"
 id_tmd<-"1w4Aw4X5cv7XQIwZKMGcz6qBKq1kKlCJA" #using the "<drv_id>" of CRU_TMd.csv
 tas_tmd<-read.csv(paste0("https://docs.google.com/uc?id=", id_tmd, "&export=download"), header = FALSE, quote = "", sep = '\t') #reading the file in my computer
 
