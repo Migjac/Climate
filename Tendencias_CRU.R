@@ -35,3 +35,23 @@ ggplot (TMd_mensual, aes(x = Anho, y = TMd_mensual)) +
   geom_boxplot(aes(group = Anho)) +
   labs(x = "Año", y = "Temperatura media")
 
+# Generar un tibble para análisis por pixel
+TMd_pixel_mes <- CRU_Tmd %>%
+  group_by(CellID, Mes) %>%
+  summarise(TMd_dif_inifin = last(TMd) - first(TMd), TMd_rango = max(TMd)-min(TMd))
+
+ggplot (TMd_pixel_mes, aes(x = Mes, y = TMd_dif_inifin)) +
+  geom_boxplot(aes(group = Mes)) +
+  labs(x = "Mes", y = "Temperatura media")
+
+ggplot (TMd_pixel_mes, aes(x = Mes, y = TMd_rango)) +
+  geom_boxplot(aes(group = Mes)) +
+  labs(x = "Mes", y = "Temperatura media")
+
+# Tibble a nivel de pixel pot año
+TMd_pixel_año <- CRU_Tmd %>%
+  group_by(CellID, Anho) %>%
+  summarise(TMd_año = mean(TMd))
+
+
+
