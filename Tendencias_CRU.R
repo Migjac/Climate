@@ -57,12 +57,5 @@ p1<-ggplot(TMd_extreme, aes(x = Anho, y = num_extreme, color=num_extreme)) +
        x = "Year", y = "Number of Cells with extreme temperature")
 p1+scale_color_gradient(low="blue", high="red")
 
-#Spatial analysis
-
-# Plot the temperature data on a map
-tm_shape(CRU_Tmd_sf) +
-  tm_dots(col = "TMd", palette = "Blues",
-          title = "Temperature (°C)", size = 0.1) +
-  tm_scale_bar()
 
 
