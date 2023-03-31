@@ -40,11 +40,12 @@ ggplot (TMd_mensual, aes(x = Anho, y = TMd_mensual)) +
   geom_boxplot(aes(group = Anho)) +
   labs(x = "Año", y = "Temperatura media")
 
-<<<<<<< HEAD
+#####HEAD
 # Generar un tibble para análisis por pixel
 TMd_pixel_mes <- CRU_Tmd %>%
   group_by(CellID, Mes) %>%
   summarise(TMd_dif_inifin = last(TMd) - first(TMd), TMd_rango = max(TMd)-min(TMd))
+TMd_pixel_mes$Mes<-as.factor(TMd_pixel_mes$Mes)
 
 ggplot (TMd_pixel_mes, aes(x = Mes, y = TMd_dif_inifin)) +
   geom_boxplot(aes(group = Mes)) +
@@ -72,7 +73,7 @@ TMd_extreme <- CRU_Tmd %>%
 p1<-ggplot(TMd_extreme, aes(x = Anho, y = num_extreme, color=num_extreme)) +
   geom_point() +
   geom_smooth(method = "lm", se = TRUE) + 
-  labs(title = "Events of Extreme Temperature (1980-2018)",
+  labs(title = "Cells with Extreme Temperature (1980-2018)",
        x = "Year", y = "Number of Cells with extreme temperature")
 p1+scale_color_gradient(low="blue", high="red")
 #>>>>>>> de165caf3567d4334caf9da05e4614debc8d2c19
