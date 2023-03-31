@@ -1,9 +1,14 @@
 library(tidyverse)
 library(ggplot2)
+library(sf)
+library(tmap)
+library(lubridate)
 
 # Leer el csv de TMd
 CRU_Tmd <- read_csv("/Users/enriquemm/Documents/Copenhague/CRU/Archivos_grandes/CRU_SerT_Tmd.csv",
                     col_names = T, cols(CellID = "i", Anho = "i", Mes = "f", TMd = "d"))
+CRU_Tmd_toda <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_Tmd_toda.csv" )#Miguel
+CRU_Tmd<-CRU_Tmd_toda
 
 # Generar un tibble con los promedios anuales y graficarlos
 TMd_anual <- CRU_Tmd %>%
@@ -35,6 +40,7 @@ ggplot (TMd_mensual, aes(x = Anho, y = TMd_mensual)) +
   geom_boxplot(aes(group = Anho)) +
   labs(x = "Año", y = "Temperatura media")
 
+<<<<<<< HEAD
 # Generar un tibble para análisis por pixel
 TMd_pixel_mes <- CRU_Tmd %>%
   group_by(CellID, Mes) %>%
@@ -48,10 +54,28 @@ ggplot (TMd_pixel_mes, aes(x = Mes, y = TMd_rango)) +
   geom_boxplot(aes(group = Mes)) +
   labs(x = "Mes", y = "Temperatura media")
 
-# Tibble a nivel de pixel pot año
+# Tibble a nivel de pixel por año
 TMd_pixel_año <- CRU_Tmd %>%
   group_by(CellID, Anho) %>%
   summarise(TMd_año = mean(TMd))
+#=======
+
+# Compute the 90th percentile of temperatures
+temp_90 <- quantile(CRU_Tmd$TMd, 0.9)
+
+# Compute the number of extreme days each year
+TMd_extreme <- CRU_Tmd %>%
+  group_by(Anho) %>%
+  summarize(num_extreme = sum(TMd >= temp_90)) 
+
+# Plot the number of extreme days by year
+p1<-ggplot(TMd_extreme, aes(x = Anho, y = num_extreme, color=num_extreme)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) + 
+  labs(title = "Events of Extreme Temperature (1980-2018)",
+       x = "Year", y = "Number of Cells with extreme temperature")
+p1+scale_color_gradient(low="blue", high="red")
+#>>>>>>> de165caf3567d4334caf9da05e4614debc8d2c19
 
 
 
