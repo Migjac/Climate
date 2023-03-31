@@ -78,5 +78,15 @@ p1<-ggplot(TMd_extreme, aes(x = Anho, y = num_extreme, color=num_extreme)) +
 p1+scale_color_gradient(low="blue", high="red")
 #>>>>>>> de165caf3567d4334caf9da05e4614debc8d2c19
 
+##Visualizing
+ggplot(data = CRU_Tmd, aes(x = Anho, y = TMd)) +
+  geom_line(aes(color = as.factor(Mes))) +
+  facet_grid(rows = vars(Lat), cols = vars(Long)) +
+  labs(title = "Temperature Data by Coordinates and Time",
+       x = "Year", y = "Temperature (°C)", color = "Mes")
+
+# Analyze relationship
+correlation_matrix <- cor(CRU_Tmd[,c("Lat", "Long", "TMd")])
+print(correlation_matrix)
 
 
