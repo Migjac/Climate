@@ -157,22 +157,3 @@ glht_results <- glht(aov(mean_temp ~ Nombre + Anho, data = temp_region_mean),
 # Print the results
 summary(glht_results)
 
-
-
-# Calculate temperature trends by region
-temp_trends <- CRU_Tmd_region %>%
-  group_by(Nombre) %>%
-  summarize(slope = coef(lm(TMd ~ as.numeric(Anho)))[2])
-
-# Subset data for two regions
-data_sub <- CRU_Tmd_region %>%
-  filter(Nombre %in% c("Cuenca Alta", "Cuenca Baja", "Cuenca Media"))
-
-# Plot temperature trends for three regions
-p <- ggplot(data_sub, aes(x = Anho, y = TMd, color = Nombre)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = paste("Temperature Trends"),
-       x = "Date", y = "Temperature") +
-  theme_bw()
-                      
