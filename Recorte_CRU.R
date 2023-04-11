@@ -48,12 +48,12 @@ library(terra)
 ##### Temperatura media
 
 # Crear el mapa de la CRU a partir del shp
-CRU_LL <- rgdal::readOGR("/Users/enriquemm/Documents/GitHub/Climate/Lim_CRU")
+CRU_LL <- rgdal::readOGR(dsn = "Lim_CRU/", layer = "CRU_LL")
 
 #### Temperatura Media
 
 # Llamar a las capas raster de Chelsa por variable y crear una lista: Temperatura Media Anual (TAS)
-path_TAS <- list.files("/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/tas",
+path_TAS <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/tas",
                           pattern = "*.tif",full.names = TRUE)
 
 TAS_stk <- raster::stack(path_TAS) # Crear un stack de las capas
@@ -99,7 +99,7 @@ write_csv(CRU_Coordenadas, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-em
 ##### Precipitación
 
 # Llamar a las capas raster de Chelsa para precipitación y crear una lista: Precipitación (Prec)
-path_Prec <- list.files("/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/pr",
+path_Prec <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/pr",
                        pattern = "*.tif",full.names = TRUE)
 
 Prec_stk <- raster::stack(path_Prec) # Crear un stack de las capas
@@ -113,7 +113,7 @@ CRU_Prec_stk <- stack(CRU_Prec)
 CRU_Prec_capasID <- as_tibble(names(CRU_Prec_stk)) %>%
   mutate(dimindex = row_number()) %>%
   relocate(dimindex, Capa = value)
-write_csv(CRU_Prec_capasID, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Prec_capasID.csv")
+write_csv(CRU_Prec_capasID, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Prec_capasID.csv")
 
 # Crear una tabla separando año y mes del nombre de las capas
 capas_Prec_CRU_stk <- as_tibble(names(CRU_Prec_stk)) %>%
@@ -132,7 +132,7 @@ CRU_Prec_Completa <- CRU_Prec_tbbl %>%
 
 # Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
 CRU_SerT_Prec <- dplyr::select(CRU_Prec_Completa, -CapaID, -Long, -Lat)
-write_csv(CRU_SerT_TMd, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Prec.csv")
+write_csv(CRU_SerT_Prec, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Prec.csv")
 
 
 
