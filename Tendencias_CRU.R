@@ -6,9 +6,9 @@ library(lubridate)
 library(multcomp)
 
 # Leer el csv de TMd
-CRU_Tmd <- read_csv("/Users/enriquemm/Documents/Copenhague/CRU/Archivos_grandes/CRU_SerT_Tmd.csv",
+CRU_Tmd <- read_csv("/Users/enriquemm/Documents/Copenhague/CRU/Archivos_grandes/CRU_SerT_TMd.csv",
                     col_names = T, cols(CellID = "i", Anho = "i", Mes = "f", TMd = "d"))
-CRU_Tmd_toda <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_Tmd_toda.csv" )#Miguel
+CRU_Tmd_toda <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_TMd_toda.csv" )#Miguel
 CRU_Tmd<-CRU_Tmd_toda
 
 # Generar un tibble con los promedios anuales y graficarlos
