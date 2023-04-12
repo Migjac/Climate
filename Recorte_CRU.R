@@ -45,7 +45,6 @@ library(tabularaster)
 library(tidyverse)
 library(terra)
 
-##### Temperatura media
 
 # Crear el mapa de la CRU a partir del shp
 CRU_LL <- rgdal::readOGR(dsn = "Lim_CRU/", layer = "CRU_LL")
