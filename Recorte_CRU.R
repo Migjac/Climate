@@ -90,7 +90,7 @@ write_csv(CRU_SerT_TMd, "/Users/enriquemm/Library/CloudStorage/GoogleDrive-emm@s
 
 
 
-####--------------------------------------------------------------------------------------------------------------------------
+#### Archivo de coordenadas  ---------------------------------------------------------------------------------------------------------------------
 
 # Generar el csv del índice de coordenadas. Este archivo se genera con TMd pero sirve para todas las variables 
 CRU_Coordenadas <- CRU_TMd_Completa %>%
@@ -219,4 +219,125 @@ CRU_Prec_Completa <- CRU_Prec_tbbl %>%
 # Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
 CRU_SerT_Prec <- dplyr::select(CRU_Prec_Completa, -CapaID, -Long, -Lat)
 write_csv(CRU_SerT_Prec, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Prec.csv")
+
+
+
+##### Evapotranspiración potencial de Penman-Montheit-----------------------------------------------------------------------
+
+# Llamar a las capas raster de Chelsa para evapotranspiración y crear una lista: Evapotranspiración (PET)
+path_PET <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/pet",
+                        pattern = "*.tif",full.names = TRUE)
+
+PET_stk <- raster::stack(path_PET) # Crear un stack de las capas
+
+# Recortar el stack de capas PET a la CRU
+CRU_PET <- raster::mask(crop(PET_stk, CRU_LL), CRU_LL)
+plot(CRU_PET[[1]])
+CRU_PET_stk <- stack(CRU_PET) # Se tiene que convertir el brick en stack para los siguientes procesos
+
+# Generar el csv del índice de capas del stack
+CRU_PET_capasID <- as_tibble(names(CRU_PET_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+write_csv(CRU_PET_capasID, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_PET_capasID.csv")
+
+# Crear una tabla separando año y mes del nombre de las capas
+capas_PET_CRU_stk <- as_tibble(names(CRU_PET_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value) %>%
+  separate(Capa, c(NA, NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
+
+# Convertir el stack en un tibble y unir todos los campos
+CRU_PET_tbbl <- na.omit(tabularaster::as_tibble(CRU_PET_stk, xy=TRUE, dim=TRUE,
+                                                 cell=TRUE, value=TRUE))
+
+CRU_PET_Completa <- CRU_PET_tbbl %>%
+  left_join(capas_PET_CRU_stk, by = "dimindex") %>%
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, PET =
+             cellvalue)
+
+# Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
+CRU_SerT_PET <- dplyr::select(CRU_PET_Completa, -CapaID, -Long, -Lat)
+write_csv(CRU_SerT_PET, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_PET.csv")
+
+
+
+##### Humedad relativa-----------------------------------------------------------------------------------------------------
+
+# Llamar a las capas raster de Chelsa para humedad y crear una lista: Humerdad Relativa cerca de la Superficie (Hur)
+path_Hur <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/hurs",
+                        pattern = "*.tif",full.names = TRUE)
+
+Hur_stk <- raster::stack(path_Hur) # Crear un stack de las capas
+
+# Recortar el stack de capas Hur a la CRU
+CRU_Hur <- raster::mask(crop(Hur_stk, CRU_LL), CRU_LL)
+plot(CRU_Hur[[1]])
+CRU_Hur_stk <- stack(CRU_Hur) # Se tiene que convertir el brick en stack para los siguientes procesos
+
+# Generar el csv del índice de capas del stack
+CRU_Hur_capasID <- as_tibble(names(CRU_Hur_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+write_csv(CRU_Hur_capasID, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Hur_capasID.csv")
+
+# Crear una tabla separando año y mes del nombre de las capas
+capas_Hur_CRU_stk <- as_tibble(names(CRU_Hur_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value) %>%
+  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
+
+# Convertir el stack en un tibble y unir todos los campos
+CRU_Hur_tbbl <- na.omit(tabularaster::as_tibble(CRU_Hur_stk, xy=TRUE, dim=TRUE,
+                                                 cell=TRUE, value=TRUE))
+
+CRU_Hur_Completa <- CRU_Hur_tbbl %>%
+  left_join(capas_Hur_CRU_stk, by = "dimindex") %>%
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, Hur =
+             cellvalue)
+
+# Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
+CRU_SerT_Hur <- dplyr::select(CRU_Hur_Completa, -CapaID, -Long, -Lat)
+write_csv(CRU_SerT_Hur, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Hur.csv")
+
+##### Índice de humedad climática--------------------------------------------------------------------------------------------
+
+# Llamar a las capas raster de Chelsa para el Índice de Humedad Climática (CMI) y crear una lista. Este índice es
+# la diferencia entre la cantidad de precipitación y la evapotranspiración potencial
+path_CMI <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/cmi",
+                        pattern = "*.tif",full.names = TRUE)
+
+CMI_stk <- raster::stack(path_CMI) # Crear un stack de las capas
+
+# Recortar el stack de capas CMI a la CRU
+CRU_CMI <- raster::mask(crop(CMI_stk, CRU_LL), CRU_LL)
+plot(CRU_CMI[[1]])
+CRU_CMI_stk <- stack(CRU_CMI) # Se tiene que convertir el brick en stack para los siguientes procesos
+
+# Generar el csv del índice de capas del stack
+CRU_CMI_capasID <- as_tibble(names(CRU_CMI_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+write_csv(CRU_CMI_capasID, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_CMI_capasID.csv")
+
+# Crear una tabla separando año y mes del nombre de las capas
+capas_CMI_CRU_stk <- as_tibble(names(CRU_CMI_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value) %>%
+  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
+
+# Convertir el stack en un tibble y unir todos los campos
+CRU_CMI_tbbl <- na.omit(tabularaster::as_tibble(CRU_CMI_stk, xy=TRUE, dim=TRUE,
+                                                 cell=TRUE, value=TRUE))
+
+CRU_CMI_Completa <- CRU_CMI_tbbl %>%
+  left_join(capas_CMI_CRU_stk, by = "dimindex") %>%
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, CMI =
+             cellvalue)
+
+# Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
+CRU_SerT_CMI <- dplyr::select(CRU_CMI_Completa, -CapaID, -Long, -Lat)
+write_csv(CRU_SerT_CMI, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_CMI.csv")
+
+
 
