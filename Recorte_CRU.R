@@ -340,4 +340,25 @@ CRU_SerT_CMI <- dplyr::select(CRU_CMI_Completa, -CapaID, -Long, -Lat)
 write_csv(CRU_SerT_CMI, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_CMI.csv")
 
 
+##### Elevación--------------------------------------------------------------------------------------------
+
+# Llamar al DEM de la CRU a 90m y convertirlo en raster
+CRU_DEM <-raster("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mexico/CRU/CRU_elev90m.tif")
+plot(CRU_DEM)
+
+# Llamar al archivo de coordenadas y convertirlo en objeto espacial para pegarle los valores de elevación
+CRU_Coord <- read.csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Coordenadas.csv")
+
+CRU_Coord_sf <- st_as_sf(CRU_Coord, coords = c("Long", "Lat"), crs = 4326)
+plot(CRU_Coord_sf)
+st_write(CRU_Coord_sf, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Coordenadas.shp")
+
+CRU_elev_sp <- extract(CRU_DEM, CRU_Coord_sf, method = 'simple', cellnumbers = F, df = T, sp = T)
+CRU_elev <- CRU_elev_sp %>% 
+  as_tibble() %>%
+  relocate(CellID, Elevacion = CRU_elev90m) %>%
+  subset(select = -c(3, 4))
+
+write_csv(CRU_elev, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_Elev.csv")
+
 
