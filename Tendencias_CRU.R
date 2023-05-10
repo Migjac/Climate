@@ -16,10 +16,10 @@ TMd_anual <- CRU_Tmd %>%
   group_by(Anho) %>%
   summarise(TMd_anual = mean(TMd)) 
 
-ggplot(TMd_anual, aes(x = Anho, y = TMd_anual)) +
+Tmdplot<-ggplot(TMd_anual, aes(x = Anho, y = TMd_anual)) +
   geom_point() +
-  geom_smooth(se = T, method = "lm") +
-  labs(x = "Año", y = "Temperatura media")
+  geom_smooth(color = "red",se = T, method = "lm") +
+  labs(x = "Año", y = "Mean Temperature (ºC)")+theme_minimal()
 
 
 # Generar un tibble con los promedios mensuales por años y graficarlos
@@ -78,13 +78,6 @@ p1<-ggplot(TMd_extreme, aes(x = Anho, y = num_extreme, color=num_extreme)) +
        x = "Year", y = "Number of Cells with extreme temperature")
 p1+scale_color_gradient(low="blue", high="red")
 #>>>>>>> de165caf3567d4334caf9da05e4614debc8d2c19
-
-##Visualizing
-ggplot(data = CRU_Tmd, aes(x = Anho, y = TMd)) +
-  geom_line(aes(color = as.factor(Mes))) +
-  facet_grid(rows = vars(Lat), cols = vars(Long)) +
-  labs(title = "Temperature Data by Coordinates and Time",
-       x = "Year", y = "Temperature (°C)", color = "Mes")
 
 # Analyze relationship
 correlation_matrix <- cor(CRU_Tmd[,c("Lat", "Long", "TMd")])
@@ -157,3 +150,111 @@ glht_results <- glht(aov(mean_temp ~ Nombre + Anho, data = temp_region_mean),
 # Print the results
 summary(glht_results)
 
+
+##========
+##Precipitation
+CRU_SerT_Prec <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_SerT_Prec.csv")
+
+# Generar un tibble con los promedios anuales y graficarlos
+Prec_anual <- CRU_SerT_Prec %>%
+  group_by(Anho) %>%
+  summarise(Prec_anual = mean(Prec)) 
+
+Precplot<-ggplot(Prec_anual, aes(x = Anho, y = Prec_anual)) +
+  geom_point() +
+  geom_smooth(se = T, method = "lm") +
+  labs(x = "Year", y = "Mean Precipitation (mm)")+theme_minimal()
+
+# Generar un tibble con los promedios mensuales por años y graficarlos
+Prec_mensual <- CRU_SerT_Prec %>%
+  group_by(Mes, Anho) %>%
+  summarise(Prec_mensual = mean(Prec)) 
+
+ggplot(Prec_mensual, aes(x = Anho, y = Prec_mensual)) +
+  geom_point() +
+  geom_smooth(color = "blue", method = "loess") +
+  facet_wrap(~ Mes) +
+  labs(x = "Year", y = "Mean Precipitation")
+
+# Compute the 90th percentile of precipitation
+prec_90 <- quantile(CRU_SerT_Prec$Prec, 0.9)
+
+# Compute the number of extreme days each year
+Prec_low <- CRU_SerT_Prec %>%
+  group_by(Mes, Anho) %>%
+  summarize(num_extreme = sum(Prec >= prec_90)) 
+
+# Plot the number of extreme days by year
+p1<-ggplot(Prec_low, aes(x = Mes, y = num_extreme, color=num_extreme)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) + 
+  labs(title = "Cells with extreme mean precipitation (1980-2018)",
+       x = "Year", y = "Number of Cells with extreme mean precipitation")
+p1+scale_color_gradient(low="blue", high="purple")
+
+
+#Analyze precipitation by regions
+CRU_Pre_region<-merge(x=CRU_SerT_Prec,y=CRU_coord_region, by="CellID", all.x=TRUE)
+CRU_Pre_region$Anho<-as.factor(CRU_Pre_region$Anho)
+# Compute the mean precipitation for each region and year
+prec_region_mean <- CRU_Pre_region %>%
+  group_by(Nombre, Anho) %>%
+  summarize(mean_prec = mean(Prec))
+
+# Compute the average precipitation for each region over the entire period
+prec_region_avg <- prec_region_mean %>%
+  group_by(Nombre) %>%
+  summarize(avg_prec = mean(mean_prec))
+
+# Create a line plot of precipitation change over time for each region
+p1<-ggplot(prec_region_mean, aes(x = Anho, y = mean_prec, color = Nombre)) +
+  geom_line() +
+  scale_x_continuous(limits = c(1980, 2018), breaks = seq(1980, 2018, by = 4)) +
+  labs(x = "Year", y = "Precipitation (mm)",
+       title = "Precipitation Change over Time by Region (1980-2018)") +
+  theme_bw()
+
+# Add a linear regression line to each region's plot
+p1+geom_smooth(method = "lm", se = TRUE, aes(group = Nombre, colour = "Mean Temperature (lm)"))
+
+#####-----
+#Relative humidity
+CRU_SerT_Hur <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_SerT_Hur.csv")
+
+# Generar un tibble con los promedios anuales y graficarlos
+Hur_anual <- CRU_SerT_Hur %>%
+  group_by(Anho) %>%
+  summarise(Hur_anual = mean(Hur)) 
+
+Hurplot<-ggplot(Hur_anual, aes(x = Anho, y = Hur_anual)) +
+  geom_point() +
+  geom_smooth(color = "green",se = T, method = "lm") +
+  labs(x = "Año", y = "Relative humidity (%)")+theme_minimal()
+
+#####-----
+
+#Maximum Temperature 
+CRU_SerT_TMx <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/CCGS/Proyectos/PAPIIT/Análisis/CRU_SerT_TMx.csv")
+
+# Generar un tibble con los promedios anuales y graficarlos
+TMx_anual <- CRU_SerT_TMx %>%
+  group_by(Anho) %>%
+  summarise(TMx_anual = mean(TMx)) 
+
+TMxplot<-ggplot(TMx_anual, aes(x = Anho, y = TMx_anual)) +
+  geom_point() +
+  geom_smooth(color = "red4",se = T, method = "lm") +
+  labs(x = "Año", y = "Maximum Temperature (ºC)")+theme_minimal()
+
+
+#Combined plots
+plot_grid(Tmdplot+theme(axis.text.x = element_blank(),
+                        axis.ticks.x = element_blank(),
+                        axis.title.x = element_blank()),
+          TMxplot+theme(axis.text.x = element_blank(),
+                        axis.ticks.x = element_blank(),
+                        axis.title.x = element_blank()),
+          Hurplot+theme(axis.text.x = element_blank(),
+                                axis.ticks.x = element_blank(),
+                                axis.title.x = element_blank()),
+          Precplot, nrow=4)
