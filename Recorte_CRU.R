@@ -300,6 +300,8 @@ CRU_Hur_Completa <- CRU_Hur_tbbl %>%
 CRU_SerT_Hur <- dplyr::select(CRU_Hur_Completa, -CapaID, -Long, -Lat)
 write_csv(CRU_SerT_Hur, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_Hur.csv")
 
+
+
 ##### Índice de humedad climática--------------------------------------------------------------------------------------------
 
 # Llamar a las capas raster de Chelsa para el Índice de Humedad Climática (CMI) y crear una lista. Este índice es
@@ -338,6 +340,48 @@ CRU_CMI_Completa <- CRU_CMI_tbbl %>%
 # Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
 CRU_SerT_CMI <- dplyr::select(CRU_CMI_Completa, -CapaID, -Long, -Lat)
 write_csv(CRU_SerT_CMI, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_CMI.csv")
+
+
+
+##### Déficit de presión de vapor--------------------------------------------------------------------------------------------
+
+# Llamar a las capas raster de Chelsa para el Déficit de presión de vapor (DPV) y crear una lista. Este índice es la diferencia
+# entre la cantidad de humedad efectiva en el aire y la cantidad máxima de humedad que el aire puede contener a cierta temperatura
+path_DPV <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_v21_month/vpd",
+                       pattern = "*.tif",full.names = TRUE)
+
+DPV_stk <- raster::stack(path_DPV) # Crear un stack de las capas
+
+# Recortar el stack de capas DPV a la CRU
+CRU_DPV <- raster::mask(crop(DPV_stk, CRU_LL), CRU_LL)
+plot(CRU_DPV[[1]])
+CRU_DPV_stk <- stack(CRU_DPV) # Se tiene que convertir el brick en stack para los siguientes procesos
+
+# Generar el csv del índice de capas del stack
+CRU_DPV_capasID <- as_tibble(names(CRU_DPV_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value)
+write_csv(CRU_DPV_capasID, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_DPV_capasID.csv")
+
+# Crear una tabla separando año y mes del nombre de las capas
+capas_DPV_CRU_stk <- as_tibble(names(CRU_DPV_stk)) %>%
+  mutate(dimindex = row_number()) %>%
+  relocate(dimindex, Capa = value) %>%
+  separate(Capa, c(NA, NA, "Mes", "Anho", NA), sep = "_", convert = T)
+
+# Convertir el stack en un tibble y unir todos los campos
+CRU_DPV_tbbl <- na.omit(tabularaster::as_tibble(CRU_DPV_stk, xy=TRUE, dim=TRUE,
+                                                cell=TRUE, value=TRUE))
+
+CRU_DPV_Completa <- CRU_DPV_tbbl %>%
+  left_join(capas_DPV_CRU_stk, by = "dimindex") %>%
+  relocate(CellID = cellindex, CapaID = dimindex, Long = x, Lat = y, Anho, Mes, DPV =
+             cellvalue)
+
+# Seleccionar solo los campos de año, mes y temperatura, exportarlo a csv
+CRU_SerT_DPV <- dplyr::select(CRU_DPV_Completa, -CapaID, -Long, -Lat)
+write_csv(CRU_SerT_DPV, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Archivos_grandes/CRU_SerT_DPV.csv")
+
 
 
 ##### Elevación--------------------------------------------------------------------------------------------
