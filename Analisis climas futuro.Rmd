@@ -1,0 +1,54 @@
+---
+title: "Análisis de climas futuros"
+Autor: "Enrique Martínez Meyer"
+Fecha: "Inicio Junio 23, 2023"
+output: html_notebook
+---
+
+En esta sección exploraré algunos análisis con las tablas y con los datos para ver las tendencias de cambio de las variables climáticas.
+```{r Librerías}
+library(tidyverse)
+library(terra)
+```
+
+
+Lo primero que quiero ver son las tendencias de cambio de cada variable por escenario a través del tiempo. Para ello, importo el csv de las variables y los reacomodo para 
+```{r Crear las tablas}
+CRU_tbbl_bio1 <- read_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio1_futuro.csv")
+
+Tmd_por_CRU <- CRU_tbbl_bio1 %>% 
+  group_by(Periodo, Escenario, GCM, .add = TRUE) %>% 
+  summarise(Tmd = mean(Bio1)) %>%
+  ungroup()
+
+Tmd_por_GCM <- Tmd_por_CRU %>% 
+  group_by(Periodo, Escenario, .add = TRUE) %>% 
+  summarise(Tma = mean(Tmd), Min = min (Tmd), Max = max(Tmd)) %>%
+  ungroup()
+
+write_csv(Tmd_por_GCM, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU bio1 por GCM para modificar.csv")
+```
+
+No supe como modificar el tibble para asignarle los valores históricos a cada escenario con el fin de que en la gráfica, las líneas comiencen desde el periodo 1981-2010, así que guardé la tabla Tmd_por GCM a csv y la modifiqué en Excel, para luego importarla y poder hacer la gráfica bien
+```{r Gráfica}
+Tmd_por_GCM_mod <- read_csv("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU bio1 por GCM modificada.csv")
+
+CRU_tendencias_sombra <- ggplot(data = Tmd_por_GCM_mod, mapping = aes(x = Periodo, y = Tma, ymin = Min, ymax = Max, group = Escenario)) +
+  geom_point() +
+  geom_line(aes(color = Escenario)) +
+  geom_ribbon(aes(fill = Escenario), alpha = 0.2) +
+  xlab("Horizonte temporal") +
+  ylab("Temperatura media anual (ºC)")
+
+plot(CRU_tendencias_sombra)
+
+
+ggplot(data = Tmd_por_CRU, mapping = aes(x = Periodo, y = Tmd, group = Escenario)) +
+  geom_point(aes(color = Escenario)) +
+  geom_line(aes(color = Escenario))
+  xlab("Horizonte temporal") +
+  ylab("Temperatura media anual (ºC)")
+
+```
+
+

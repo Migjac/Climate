@@ -1,0 +1,160 @@
+---
+Title: "Recorte de mapas y generación de tablas para climas futuros"
+Autor: "Enrique Martínez Meyer"
+Fecha: "Inicio Junio 21, 2023"
+Output: html_notebook
+---
+
+Los datos provienen de la base de datos de Chelsa versión 2.1 (https://chelsa-climate.org), que son climatologías mundiales en formato ráster a 30 segundos de arco de resolución (aprox. 1 km). Se usaron climatologías para 4 periodos (https://chelsa-climate.org/cmip6/): 1981-2010, 2011-2040, 2041-2070, 2071-2100. Para todos los periodos se usarán las 19 variables bioclimáticas tradicionales derivadas de las climatologías CMIP6 y los 5 GCMs disponibles en Chelsa: GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0 y UKESM1-0-LL, para los tres escenarios de emisiones disponibles: ssp126, ssp370 y ssp585.
+
+El primer paso es recortar las capas globales a la CRU. El límite de las cuenca se obtuvo del proyecto FORDECyT del CCGS, y fue generado por el Centro Geo.
+```{r Importar shp de la CRU}
+library(raster)
+library(rgdal)
+library(sf)
+library(sp)
+library(stringr)
+library(terra)
+library(tidyverse)
+
+# Crear el mapa de la CRU a partir del shp
+CRU_LL <- terra::vect("Lim_CRU/CRU_LL.shp")
+plot(CRU_LL)
+```
+
+Recorte de mapas
+```{r Recorte de mapas globales por cuenca}
+# Llamar a las capas raster de Chelsa de las bios que nos interesan y todos los escenarios y crear una lista
+Ruta_bios <- list.files("/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Geodatos/Mundo/Chelsa_CMIP6",
+                          pattern = ("bio1_|bio4|bio5|bio6|bio12|bio15|bio16|bio17"), full.names = TRUE, recursive = TRUE)
+
+# Crear un objeto raster de todas las capas (equivalente a un stack)
+Bios_rast <- terra::rast(Ruta_bios)
+
+# Cortar y enmascarar el objeto raster a la cuenca
+CRU_bios <- terra::crop(x = Bios_rast, y = CRU_LL, mask = TRUE, touches = FALSE, extend = TRUE)
+plot(CRU_bios[[1]])
+
+terra::writeRaster(CRU_bios, "Capas_futuro/CRU_bios_futuro.tif", overwrite = TRUE)
+```
+
+Convertir el stack en un tibble, acomodar los campos y guardar como csv para cada bio por separado porque es demasiado grande para generar una única tabla con toda la información.
+```{r Bio1}
+CRU_tbbl_bio1 <- tibble(as.data.frame(CRU_bios["bio1_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio1 = bio1) %>%
+  mutate(across(Bio1, round, 2))
+
+write_csv(CRU_tbbl_bio1, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio1_futuro.csv")
+```
+
+
+```{r Bio4}
+CRU_tbbl_bio4 <- tibble(as.data.frame(CRU_bios["bio4_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio4 = bio4) %>%
+  mutate(across(Bio4, round, 2))
+
+write_csv(CRU_tbbl_bio4, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio4_futuro.csv")
+```
+
+
+```{r Bio5}
+CRU_tbbl_bio5 <- tibble(as.data.frame(CRU_bios["bio5_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio5 = bio5) %>%
+  mutate(across(Bio5, round, 2))
+
+write_csv(CRU_tbbl_bio5, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio5_futuro.csv")
+```
+
+
+```{r Bio6}
+CRU_tbbl_bio6 <- tibble(as.data.frame(CRU_bios["bio6_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio6 = bio6) %>%
+  mutate(across(Bio6, round, 2))
+
+write_csv(CRU_tbbl_bio6, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio6_futuro.csv")
+```
+
+
+```{r Bio12}
+CRU_tbbl_bio12 <- tibble(as.data.frame(CRU_bios["bio12_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio12 = bio12) %>%
+  mutate(across(Bio12, round, 2))
+
+write_csv(CRU_tbbl_bio12, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio12_futuro.csv")
+```
+
+
+```{r Bio15}
+CRU_tbbl_bio15 <- tibble(as.data.frame(CRU_bios["bio15_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio15 = bio15) %>%
+  mutate(across(Bio15, round, 2))
+
+write_csv(CRU_tbbl_bio15, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio15_futuro.csv")
+```
+
+
+```{r Bio16}
+CRU_tbbl_bio16 <- tibble(as.data.frame(CRU_bios["bio16_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio16 = bio16) %>%
+  mutate(across(Bio16, round, 2))
+
+write_csv(CRU_tbbl_bio16, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio16_futuro.csv")
+```
+
+
+```{r Bio17}
+CRU_tbbl_bio17 <- tibble(as.data.frame(CRU_bios["bio17_"], xy = TRUE, cells = TRUE, na.rm = TRUE)) %>% 
+  pivot_longer(cols = !c(cell, x, y), names_to = "Capa", values_to = "Valores") %>%
+  mutate(Capa = str_replace(Capa, 'CHELSA_', ''), Capa = str_replace(Capa, '_V.2.1', ''),
+        Capa = str_replace(Capa, '1981-2010', '1981-2010_observado_histórico')) %>%
+  separate(col = Capa, c("Variable", "Periodo", "GCM", "Escenario"), sep = "_") %>%
+  pivot_wider(names_from = Variable, values_from = Valores) %>%
+  mutate_at("cell", as.integer) %>%
+  relocate(CeldaID = cell, Long = x, Lat = y, Periodo, Escenario, GCM, Bio17 = bio17) %>%
+  mutate(across(Bio17, round, 2))
+
+write_csv(CRU_tbbl_bio17, "/Users/enriquemartinez/Library/CloudStorage/GoogleDrive-emm@st.ib.unam.mx/Mi unidad/Proyectos/PAPIIT2022_CC_CRU/Analisis/Clima/Escenarios_futuro/CRU_bio17_futuro.csv")
+```
+
